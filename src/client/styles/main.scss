@@ -1,0 +1,228 @@
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* header style */
+.header-content {
+    background-image: url(../images/headerBackground.webp);
+    height: 100vh;
+    background-repeat: no-repeat;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+}
+
+.wrapper {
+    background-color: transparent;
+    width: 100%;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+/* svg & h1 style */
+svg {
+    width: 50%;
+    height: auto;
+}
+
+svg text {
+    animation: stroke 5s infinite alternate;
+    animation-delay: 1s;
+    stroke-width: 2;
+    stroke: #365FA0;
+    font-size: 100px;
+}
+
+@keyframes stroke {
+    0% {
+        fill: rgba(72,138,204,0); stroke: rgb(3, 47, 92);
+        stroke-dashoffset: 25%; stroke-dasharray: 0 50%; stroke-width: 2;
+    }
+    70% {fill: rgba(72,138,204,0); stroke: rgb(3, 47, 92); }
+    80% {fill: rgba(72,138,204,0); stroke: rgba(3, 47, 92, 1); stroke-width: 3;}
+    100% {
+        fill: rgba(72,138,204,1); stroke: rgba(54,95,160,0);
+        stroke-dashoffset: -25%; stroke-dasharray: 50% 0; stroke-width: 0;
+    }
+}
+
+h1 {
+    font-size: 50px;
+    color: transparent;
+    -webkit-text-stroke: 2px #365FA0;
+    animation: text-stroke 5s infinite alternate;
+}
+
+@keyframes text-stroke {
+    0% { -webkit-text-stroke: 2px #365FA0; color: transparent; }
+    100% { -webkit-text-stroke: 0px #365FA0; color: #365FA0; }
+}
+
+/* Button styling with smooth hover transition */
+button {
+    width: 120px;
+    height: 50px;
+    border-radius: 50px;
+    border: none;
+    margin-top: 20px;
+    background-color: rgb(117, 177, 236);
+    text-align: center;
+    transition: background-color 0.3s ease, border 0.3s ease; /* Added transition */
+}
+
+button a {
+    text-decoration: none;
+    color: rgb(3, 47, 92);
+    display: block;
+    width: 100%;
+    height: 100%;
+    line-height: 50px;
+}
+
+button:hover {
+    background-color: white;
+    border: 1px solid rgb(3, 47, 92);
+}
+
+/* booking form */
+.booking {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f8f8f8;
+    padding: 40px 0;
+}
+
+.booking h2 {
+    color: rgb(3, 47, 92);
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+}
+
+form div {
+    width: 100%;
+    margin-top: 20px;
+}
+
+form label {
+    display: block;
+    color: rgb(3, 47, 92);
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+form input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+form button {
+    width: 120px;
+    height: 40px;
+    border-radius: 25px;
+    border: none;
+    margin: 20px 0;
+    background-color: rgb(117, 177, 236);
+    color: rgb(3, 47, 92);
+    font-size: 16px;
+    transition: background-color 0.3s ease, border 0.3s ease;
+}
+
+form button:hover {
+    background-color: white;
+    border: 1px solid rgb(3, 47, 92);
+}
+
+/* trip information */
+.tripInformation {
+    padding: 40px 0;
+    text-align: center;
+}
+
+.tripInformation h3 {
+    color: rgb(3, 47, 92);
+}
+
+#tripDetails {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+#image, #weather, #tripDate {
+    background: #e0e0e0;
+    padding: 20px;
+    border-radius: 10px;
+    width: 200px;
+    height: 100px;
+}
+
+#tripDetails img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+#weather, #tripDate {
+    padding: 20px;
+    background-color: #f8f8f8;
+    border-radius: 10px;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Responsive Design for small screens */
+@media (max-width: 768px) {
+    .wrapper {
+        height: auto;
+    }
+
+    .header-content {
+        height: auto;
+    }
+
+    svg {
+        width: 70%;
+    }
+
+    h1 {
+        font-size: 36px;
+    }
+
+    .booking form {
+        width: 90%;
+        max-width: 350px;
+    }
+
+    .tripInformation {
+        padding: 20px 0;
+    }
+
+    #tripDetails {
+        flex-direction: column;
+    }
+
+    #image, #weather, #tripDate {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}

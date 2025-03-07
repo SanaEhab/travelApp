@@ -1,39 +1,56 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
-    <head>
-        <meta charset="utf-8">
-        <title>Test</title>
-    </head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/media.css">
+    <title>Travel App</title>
+</head>
+<body>
+    <!-- header -->
+    <section class="header-content">
+        <div class="wrapper">
+            <svg>
+                <text x="50%" y="50%" dy=".35em" text-anchor="middle">
+                    O Airlines
+                </text>
+            </svg>
+            <h1 class="title">
+                WELCOME TO O AIRLINES
+            </h1>
+            <button>
+                <a href="#bookingSection">Book here</a>
+            </button>
+        </div>
+    </section>
 
-    <body>
-
-        <header>
-            <div class="">
-                Logo
+    <!-- booking area -->
+    <section id="bookingSection" class="booking">
+        <div class="title">
+            <h2>Book here</h2>
+        </div>
+        <form action="" method="POST">
+            <div>
+                <label for="location">Your Destination</label>
+                <input type="text" id="location" placeholder="Enter a city" required>
             </div>
-            <div class="">
-                navigation
+            <div>
+                <label for="date">Departing</label>
+                <input type="date" id="date" name="date" required>
             </div>
-        </header>
+            <button type="submit">Book Now</button>
+        </form>
+    </section>
 
-        <main>
-            <section>
-                <form id="urlForm">
-                    <input type="text" id="name" placeholder="Enter URL" required />
-                    <button type="submit">Submit</button>
-                </form>
-                
-            </section>
-
-            <section>
-                <strong>Form Results:</strong>
-                <div id="results"></div>
-            </section>
-        </main>
-
-        <footer>
-            <p>This is a footer</p>
-        </footer>
-
-    </body>
+    <!-- trip details -->
+    <section class="tripInformation">
+        <h3 class="title">Your Trip Information</h3>
+        <div id="tripDetails">
+            <div id="image"></div>
+            <div id="weather"></div>
+            <div id="tripDate"></div> 
+        </div>
+    </section>
+</body>
 </html>

@@ -30,4 +30,16 @@ describe('isValidURL', () => {
         const result = isValidURL(emptyURL);
         expect(result).toBe(false);
     });
+
+    test('should return false for URLs without domain name', () => {
+        const noDomainURL = 'http://';
+        const result = isValidURL(noDomainURL);
+        expect(result).toBe(false);
+    });
+
+    test('should return false for URLs with spaces', () => {
+        const urlWithSpaces = 'http://example .com';
+        const result = isValidURL(urlWithSpaces);
+        expect(result).toBe(false);
+    });
 });
