@@ -1,68 +1,91 @@
-require('dotenv').config(); // Load environment variables from a .env file
-const express = require('express'); // Import Express framework
-const cors = require('cors'); // Import CORS to allow cross-origin requests
-const bodyParser = require('body-parser'); // Import body-parser to parse incoming request bodies
-const axios = require('axios'); // Import axios for making HTTP requests
+require('dotenv').config(); // Load environment variables
+const express = require('express'); 
+const cors = require('cors'); 
+const bodyParser = require('body-parser'); 
+const axios = require('axios'); 
 
-const app = express(); // Create an Express application instance
-app.use(cors()); // Enable CORS for all routes
-app.use(bodyParser.json()); // Use JSON parser for incoming request bodies
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
 
-// Define an API endpoint for handling POST requests
+const PORT = 8000;
+
+// Debugging: Ensure API keys are loaded
+if (!process.env.GEONAMES_USERNAME || !process.env.WEATHERBIT_API_KEY || !process.env.PIXABAY_API_KEY) {
+    console.error("Missing API keys. Check your .env file!");
+    process.exit(1); // Stop server if API keys are missing
+}
+
+// API endpoint for trip data
 app.post('/api', async (req, res) => {
-    const { location, date } = req.body; // Extract location and date from request body
+    const { location, date } = req.body;
 
-    // Validate that both location and date are provided
     if (!location || !date) {
         return res.status(400).json({ message: "Location and date are required" });
     }
 
     try {
-        // Fetch geographical coordinates from GeoNames API
-        const geoResponse = await axios.get(`http://api.geonames.org/searchJSON?q=${location}&maxRows=1&username=${process.env.GEONAMES_USERNAME}`);
-        const locationData = geoResponse.data.geonames[0]; // Extract first matching location
+        // 1. Get location coordinates from GeoNames
+        const geoResponse = await axios.get(`http://api.geonames.org/searchJSON`, {
+            params: {
+                q: location,
+                maxRows: 1,
+                username: process.env.GEONAMES_USERNAME
+            }
+        });
 
-        // If no location is found, return an error response
-        if (!locationData) {
+        if (!geoResponse.data.geonames.length) {
             return res.status(404).json({ message: "Location not found." });
         }
 
-        // Extract latitude, longitude, and country name
-        const { lat, lng, countryName } = locationData;
+        const { lat, lng, countryName } = geoResponse.data.geonames[0];
 
-        // Fetch weather forecast data from Weatherbit API
-        const weatherResponse = await axios.get(`https://api.weatherbit.io/v2.0/forecast/daily?lat=${lat}&lon=${lng}&key=${process.env.WEATHERBIT_API_KEY}`);
-        const weatherData = weatherResponse.data.data[0]; // Get the first day's forecast
+        // 2. Get weather forecast from Weatherbit
+        const weatherResponse = await axios.get(`https://api.weatherbit.io/v2.0/forecast/daily`, {
+            params: {
+                lat,
+                lon: lng,
+                key: process.env.WEATHERBIT_API_KEY
+            }
+        });
 
-        // If no weather data is found, return an error response
-        if (!weatherData) {
+        if (!weatherResponse.data.data || !weatherResponse.data.data.length) {
             return res.status(404).json({ message: "Weather data not found." });
         }
 
-        // Fetch an image of the location from Pixabay API
-        const imageResponse = await axios.get(`https://pixabay.com/api/?key=${process.env.PIXABAY_API_KEY}&q=${encodeURIComponent(location)}&image_type=photo`);
+        const weatherData = weatherResponse.data.data[0];
+
+        // 3. Get image from Pixabay
+        const imageResponse = await axios.get(`https://pixabay.com/api/`, {
+            params: {
+                key: process.env.PIXABAY_API_KEY,
+                q: location,
+                image_type: "photo"
+            }
+        });
+
         const imageUrl = imageResponse.data.hits.length > 0 ? imageResponse.data.hits[0].webformatURL : null;
 
-        // Calculate countdown days until the trip
+        // 4. Calculate countdown days
         const tripDate = new Date(date);
         const today = new Date();
-        const timeDiff = tripDate - today;
-        const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // Convert milliseconds to days
+        const daysLeft = Math.ceil((tripDate - today) / (1000 * 60 * 60 * 24));
 
-        // Send a response with location, weather, image, and countdown
+        // Send response
         res.json({
             location: { city: location, country: countryName, lat, lng },
             weather: { temp: weatherData.temp, description: weatherData.weather.description, date: weatherData.valid_date },
             image: imageUrl,
             countdown: daysLeft
         });
+
     } catch (error) {
-        console.error("Error fetching data:", error); // Log error details for debugging
-        res.status(500).json({ message: 'Error fetching data from APIs' }); // Return error response
+        console.error("Error fetching data:", error.message);
+        res.status(500).json({ message: "Error fetching data from APIs" });
     }
 });
 
-// Start the Express server on port 8000
-app.listen(8000, () => {
-    console.log('Server is running on port 8000');
+// Start server
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
