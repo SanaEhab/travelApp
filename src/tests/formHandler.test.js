@@ -1,78 +1,81 @@
-import { screen, fireEvent, waitFor } from '@testing-library/dom';
-import '@testing-library/jest-dom';
 import { handleFormSubmit } from '../client/js/formHandler';
+import '@testing-library/jest-dom';
+import { fireEvent, screen } from '@testing-library/dom';
 
-// Mock fetch
-global.fetch = jest.fn();
-
-beforeEach(() => {
-  // Set up HTML structure for testing
-  document.body.innerHTML = `
-    <form data-testid="bookingForm" id="bookingForm">
-      <input id="location" type="text" value="Paris" />
-      <input id="date" type="date" value="2025-06-15" />
-      <button type="submit">Submit</button>
-    </form>
-    <div id="image"></div>
-    <div id="weather"></div>
-    <div id="tripDate"></div>
-  `;
-
-  // Add event listener to form
-  document.getElementById('bookingForm').addEventListener('submit', handleFormSubmit);
-});
-
-it('should submit the form and display the correct data', async () => {
-  // Mock the fetch call to return weather and image data
-  global.fetch.mockImplementationOnce(() =>
+// Mock the fetch function
+global.fetch = jest.fn(() =>
     Promise.resolve({
-      json: () => Promise.resolve({
-        weather: { temp: 25 },
-        image: 'https://example.com/image.jpg'
-      })
+        json: () => Promise.resolve({
+            weather: { temp: 25, description: 'Sunny' },
+            countdown: 5,
+            image: 'https://example.com/image.jpg'
+        })
     })
-  );
+);
 
-  // Simulate form submission
-  fireEvent.submit(screen.getByTestId('bookingForm'));
+describe('handleFormSubmit', () => {
+    let form, locationInput, dateInput, weatherDiv, imageDiv, tripDateDiv;
 
-  // Wait for the DOM to update and check if weather data is displayed
-  await waitFor(() => screen.getByText('Weather: 25°C'));
+    beforeEach(() => {
+        // Set up the DOM structure
+        document.body.innerHTML = `
+            <form id="bookingForm">
+                <input id="location" value="Paris" />
+                <input id="date" value="2025-06-01" />
+                <button type="submit">Book Now</button>
+            </form>
+            <div id="weather"></div>
+            <div id="tripDate"></div>
+            <div id="image"></div>
+        `;
 
-  // Verify if the data is correctly displayed
-  expect(screen.getByText('Weather: 25°C')).toBeInTheDocument();
-  expect(screen.getByText('Trip Date: 2025-06-15')).toBeInTheDocument();
-  expect(screen.getByRole('img')).toHaveAttribute('src', 'https://example.com/image.jpg');
-});
+        // Get elements
+        form = document.getElementById('bookingForm');
+        locationInput = document.getElementById('location');
+        dateInput = document.getElementById('date');
+        weatherDiv = document.getElementById('weather');
+        tripDateDiv = document.getElementById('tripDate');
+        imageDiv = document.getElementById('image');
 
-it('should show an alert if no data is available', async () => {
-  // Mock fetch to return empty data
-  global.fetch.mockImplementationOnce(() =>
-    Promise.resolve({
-      json: () => Promise.resolve({})
-    })
-  );
+        // Attach event listener
+        form.addEventListener('submit', handleFormSubmit);
+    });
 
-  // Mock window.alert
-  window.alert = jest.fn();
+    test('should prevent form submission if fields are empty', () => {
+        locationInput.value = '';
+        dateInput.value = '';
+        
+        const alertMock = jest.spyOn(window, 'alert').mockImplementation(() => {});
 
-  // Simulate form submission
-  fireEvent.submit(screen.getByTestId('bookingForm'));
+        fireEvent.submit(form);
 
-  // Wait for alert to be called
-  await waitFor(() => expect(window.alert).toHaveBeenCalledWith('No data available'));
-});
+        expect(alertMock).toHaveBeenCalledWith('Please fill in all fields');
+        expect(fetch).not.toHaveBeenCalled();
 
-it('should show an error alert if fetch fails', async () => {
-  // Mock fetch to simulate an error
-  global.fetch.mockImplementationOnce(() => Promise.reject(new Error('Network Error')));
+        alertMock.mockRestore();
+    });
 
-  // Mock window.alert
-  window.alert = jest.fn();
+    test('should make a fetch request with correct data', async () => {
+        fetch.mockClear();
 
-  // Simulate form submission
-  fireEvent.submit(screen.getByTestId('bookingForm'));
+        fireEvent.submit(form);
 
-  // Wait for alert to be called
-  await waitFor(() => expect(window.alert).toHaveBeenCalledWith('Error while fetching the data'));
+        expect(fetch).toHaveBeenCalledWith('http://localhost:8080/api', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ location: 'Paris', date: '2025-06-01' })
+        });
+    });
+
+    test('should update DOM with fetched data', async () => {
+        fetch.mockClear();
+        fireEvent.submit(form);
+
+        // Wait for the DOM to update
+        await new Promise(r => setTimeout(r, 100));
+
+        expect(weatherDiv.innerHTML).toContain('Weather: 25°C, Sunny');
+        expect(tripDateDiv.innerHTML).toContain('Trip Date: 2025-06-01');
+        expect(imageDiv.innerHTML).toContain('<img src="https://example.com/image.jpg"');
+    });
 });

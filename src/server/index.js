@@ -1,19 +1,20 @@
 require('dotenv').config(); // Load environment variables
-const express = require('express'); 
-const cors = require('cors'); 
-const bodyParser = require('body-parser'); 
-const axios = require('axios'); 
+
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const axios = require('axios');
 
 const app = express();
+const PORT = 8080;
+
 app.use(cors());
 app.use(bodyParser.json());
 
-const PORT = 8080;
-
-// Debugging: Ensure API keys are loaded
+// Ensure API keys are available
 if (!process.env.GEONAMES_USERNAME || !process.env.WEATHERBIT_API_KEY || !process.env.PIXABAY_API_KEY) {
     console.error("Missing API keys. Check your .env file!");
-    process.exit(1); // Stop server if API keys are missing
+    process.exit(1); // Stop the server if API keys are missing
 }
 
 // API endpoint for trip data
@@ -25,7 +26,7 @@ app.post('/api', async (req, res) => {
     }
 
     try {
-        // 1. Get location coordinates from GeoNames
+        //Get location coordinates from GeoNames
         const geoResponse = await axios.get(`http://api.geonames.org/searchJSON`, {
             params: {
                 q: location,
@@ -40,7 +41,7 @@ app.post('/api', async (req, res) => {
 
         const { lat, lng, countryName } = geoResponse.data.geonames[0];
 
-        // 2. Get weather forecast from Weatherbit
+        //Get weather forecast from Weatherbit
         const weatherResponse = await axios.get(`https://api.weatherbit.io/v2.0/forecast/daily`, {
             params: {
                 lat,
@@ -55,7 +56,7 @@ app.post('/api', async (req, res) => {
 
         const weatherData = weatherResponse.data.data[0];
 
-        // 3. Get image from Pixabay
+        //Get image from Pixabay
         const imageResponse = await axios.get(`https://pixabay.com/api/`, {
             params: {
                 key: process.env.PIXABAY_API_KEY,
@@ -66,7 +67,7 @@ app.post('/api', async (req, res) => {
 
         const imageUrl = imageResponse.data.hits.length > 0 ? imageResponse.data.hits[0].webformatURL : null;
 
-        // 4. Calculate countdown days
+        //Calculate countdown days
         const tripDate = new Date(date);
         const today = new Date();
         const daysLeft = Math.ceil((tripDate - today) / (1000 * 60 * 60 * 24));
@@ -86,10 +87,8 @@ app.post('/api', async (req, res) => {
 });
 
 // Start server
-if (process.env.NODE_ENV !== 'test') {
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
-}
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 
 module.exports = app;
