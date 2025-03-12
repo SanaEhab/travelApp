@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const PORT = 8000;
+const PORT = 8080;
 
 // Debugging: Ensure API keys are loaded
 if (!process.env.GEONAMES_USERNAME || !process.env.WEATHERBIT_API_KEY || !process.env.PIXABAY_API_KEY) {
@@ -86,6 +86,10 @@ app.post('/api', async (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
+
+module.exports = app;
