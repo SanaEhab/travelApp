@@ -17,6 +17,11 @@ if (!process.env.GEONAMES_USERNAME || !process.env.WEATHERBIT_API_KEY || !proces
     process.exit(1); // Stop the server if API keys are missing
 }
 
+app.get('/', function (req, res) {
+    res.send(`This is server side, Server is running on port ${PORT}`);
+});
+
+
 // API endpoint for trip data
 app.post('/api', async (req, res) => {
     const { location, date } = req.body;
